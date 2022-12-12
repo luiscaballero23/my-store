@@ -8,15 +8,24 @@ import { ProductsService } from '../../services/products.service';
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
-  styleUrls: ['./products.component.scss']
+  styleUrls: ['./products.component.scss'],
 })
 export class ProductsComponent implements OnInit {
-
   myShoppingCart: Product[] = [];
   total = 0;
   products: Product[] = [];
-  today = new Date();
-  date = new Date(2022,9,23);
+  showProductDetail = false;
+  productChosen: Product = {
+    id: '',
+    price: 0,
+    images: [],
+    title: '',
+    category: {
+      id: '',
+      name: '',
+    },
+    description: '',
+  };
 
   constructor(
     private storeService: StoreService,
@@ -26,8 +35,7 @@ export class ProductsComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.productsService.getAllProducts()
-    .subscribe(data => {
+    this.productsService.getAllProducts().subscribe((data) => {
       this.products = data;
     });
   }
@@ -37,4 +45,14 @@ export class ProductsComponent implements OnInit {
     this.total = this.storeService.getTotal();
   }
 
-} 
+  toggleProductDetail() {
+    this.showProductDetail = !this.showProductDetail;
+  }
+
+  onShowDetail(id: string) {
+    this.productsService.getProduct(id).subscribe((data) => {
+      this.toggleProductDetail();
+      this.productChosen = data;
+    });
+  }
+}
