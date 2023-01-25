@@ -18,20 +18,18 @@ export class AuthService {
     return this.http.post<Auth>(`${this.apiUrl}/login`, { email, password });
   }
 
-  getProfile(token: string) {
+  getProfile() {
     // const headers = new HttpHeaders();
     // headers.set('Authorization',  `Bearer ${token}`);
     return this.http.get<User>(`${this.apiUrl}/profile`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        // 'Content-type': 'application/json'
-      },
+      // headers: {
+      //   Authorization: `Bearer ${token}`,
+      //   // 'Content-type': 'application/json'
+      // }
     });
   }
 
   loginAndGet(email: string, password: string) {
-    return this.login(email, password).pipe(
-      switchMap((rta) => this.getProfile(rta.access_token))
-    );
+    return this.login(email, password).pipe(switchMap(() => this.getProfile()));
   }
 }
