@@ -20,18 +20,33 @@ import { environment } from './../../environments/environment';
   providedIn: 'root',
 })
 export class ProductsService {
-  private apiUrl = `${environment.API_URL}/api/products`;
+  private apiUrl = `${environment.API_URL}/api`;
 
   constructor(private http: HttpClient) {}
 
-  getAllProducts(limit?: number, offset?: number) {
+  getByCategory(categoryId: string, limit?: number, offset?: number) {
     let params = new HttpParams();
-    if (limit && offset) {
+    if (limit && offset != null) {
       params = params.set('limit', limit);
-      params = params.set('offset', limit);
+      params = params.set('offset', offset);
+    }
+    return this.http.get<Product[]>(
+      `${this.apiUrl}/categories/${categoryId}/products`,
+      { params }
+    );
+  }
+
+  getAll(limit?: number, offset?: number) {
+    let params = new HttpParams();
+    if (limit && offset != null) {
+      params = params.set('limit', limit);
+      params = params.set('offset', offset);
     }
     return this.http
-      .get<Product[]>(this.apiUrl, { params, context: checkTime() })
+      .get<Product[]>(`${this.apiUrl}/products`, {
+        params,
+        context: checkTime(),
+      })
       .pipe(
         retry(3),
         map((products) =>
@@ -46,11 +61,11 @@ export class ProductsService {
   }
 
   fetchReadAndUpdate(id: string, dto: UpdateProductDTO) {
-    return zip(this.getProduct(id), this.update(id, dto));
+    return zip(this.getOne(id), this.update(id, dto));
   }
 
-  getProduct(id: string) {
-    return this.http.get<Product>(`${this.apiUrl}/${id}`).pipe(
+  getOne(id: string) {
+    return this.http.get<Product>(`${this.apiUrl}/products/${id}`).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === HttpStatusCode.Conflict) {
           return throwError('Algo esta fallando en el server');
@@ -66,21 +81,15 @@ export class ProductsService {
     );
   }
 
-  getProductsByPage(limit: number, offset: number) {
-    return this.http.get<Product[]>(`${this.apiUrl}`, {
-      params: { limit, offset },
-    });
-  }
-
   create(dto: CreateProductDTO) {
-    return this.http.post<Product>(this.apiUrl, dto);
+    return this.http.post<Product>(`${this.apiUrl}/products`, dto);
   }
 
   update(id: string, dto: UpdateProductDTO) {
-    return this.http.put<Product>(`${this.apiUrl}/${id}`, dto);
+    return this.http.put<Product>(`${this.apiUrl}/products/${id}`, dto);
   }
 
   delete(id: string) {
-    return this.http.delete<boolean>(`${this.apiUrl}/${id}`);
+    return this.http.delete<boolean>(`${this.apiUrl}/products/${id}`);
   }
 }
