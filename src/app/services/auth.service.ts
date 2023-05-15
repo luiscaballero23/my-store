@@ -18,6 +18,13 @@ export class AuthService {
 
   constructor(private http: HttpClient, private tokenService: TokenService) {}
 
+  getCurrentUser() {
+    const token = this.tokenService.getToken();
+    if (token) {
+      this.getProfile().subscribe();
+    }
+  }
+
   login(email: string, password: string) {
     return this.http
       .post<Auth>(`${this.apiUrl}/login`, { email, password })
@@ -38,5 +45,6 @@ export class AuthService {
 
   logout() {
     this.tokenService.removeToken();
+    this.user.next(null);
   }
 }
